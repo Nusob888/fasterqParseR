@@ -40,7 +40,7 @@ The functions *assignSRAreads()* and *renameAll()* will always output a csv file
 ##Assign directories
 working_dir = "~/Project_X/"
 input_dir = "~/Project_X/fasterq_output/"
-outdir="/well/combat/users/vkh192/public/CSF_data/read_lengths/"
+outdir="~/Project_X/read_lengths/"
 
 ##Assign SRA reads. This will output a datatable containing columns: "SRR_ID", "assigned_read", "new_names", "cellranger_names"
 assigned_files <- assignSRAreads(working_dir = working_directory, input_dir = input_dir, outdir =outdir)
