@@ -26,6 +26,11 @@ The motivation for writing this was born out of repeated misordering of fasterq/
 
 # Instructions for use
 
+```
+library(devtools)
+install_github('Nusob888/fasterqParseR')
+```
+
 To avoid unwanted behaviours, always input absolute paths. I have used relative paths in this example for brevity. 
 If outdir is left empty, the function *assignSRAreads()* will make a "read_lengths" directory in the working_dir. 
 
