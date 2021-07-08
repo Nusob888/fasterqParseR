@@ -4,9 +4,9 @@
 
 This tool is a quick and dirty method for checking filenames of fasterq/fastq-dump outputs. It requires the outputs obtained with the following option arguments:
 
-fasterq-dump --include-technical --split-files
-or
-fastq-dump --split-files
+fasterq-dump --include-technical --split-files</br>
+or</br>
+fastq-dump --split-files</br>
 
 The tool will then take an input directory and iteratively sample the top 250 reads and assign them to R1, R2 or I1 using the following paramaters and generate correct names based on these assignments or cellranger compatible names based on these assignments. 
 
