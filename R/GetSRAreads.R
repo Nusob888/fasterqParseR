@@ -64,6 +64,13 @@ assignSRAreads <- function(working_dir=NULL, input_dir=NULL, outdir=NULL, get_ve
     ##set working directory
     setwd(working_dir)
 
+    if(isTRUE(get_versions)){
+    #Extract whitelists from package
+    data(tenXv1, tenXv2, tenXv3)
+    whitelists <- list(tenXv1, tenXv2, tenXv3)
+    names(whitelists) <- c("10xv1", "10xv2", "10xv3")
+    }
+
     ##Get fastqs and create dataframe of references
     fasterq_list <- list.files(input_dir, pattern="fastq.gz$|fastq$", recursive=TRUE,full.names = TRUE)
     orig_names <- gsub(".*SRR", "SRR", fasterq_list)
@@ -93,10 +100,13 @@ assignSRAreads <- function(working_dir=NULL, input_dir=NULL, outdir=NULL, get_ve
       SRR_ID <- toParse[x,"orig_names"]
       assigned <- data.frame(SRR_ID, assigned_read, version)
       return(assigned)
+
     }else{
+
       SRR_ID <- toParse[x,"orig_names"]
       assigned <- data.frame(SRR_ID, assigned_read)
       return(assigned)
+
     }
     })
 
