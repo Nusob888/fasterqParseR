@@ -90,17 +90,17 @@ assignSRAreads <- function(working_dir=NULL, input_dir=NULL, outdir=NULL, get_ch
         system(paste0("zcat ", x, " | head -40000 | awk '{if(NR%4==2) print /^@/ ? $1 : substr($0,1,16)}' > ", outdir,toParse[x,"fastq_names"],".seqs.txt"))
         seqs <- scan(paste0(outdir,toParse[x,"fastq_names"],".seqs.txt"),character(), quiet = TRUE)
 
-        #Sum matched seqs to whitelists and take version of greatest matches
+        #Sum matched seqs to whitelists and take chemistry of greatest matches
         whitelist_counts <- cbind(lapply(whitelists, function(x){
           sum(seqs %in% x)
         }))
-        version <- names(whitelist_counts[which.max(whitelist_counts),])
+        chemistry <- names(whitelist_counts[which.max(whitelist_counts),])
       }else{
-        version <- NA
+        chemistry <- NA
       }
 
       SRR_ID <- toParse[x,"orig_names"]
-      assigned <- data.frame(SRR_ID, assigned_read, version)
+      assigned <- data.frame(SRR_ID, assigned_read, chemistry)
       return(assigned)
 
     }else{
