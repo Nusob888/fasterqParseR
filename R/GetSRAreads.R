@@ -123,4 +123,3 @@ renameAll <- function(assigned_SRA = NULL, input_dir=NULL, format = NULL){
   print("All done! Please check in assigned_SRAreads.csv for new column name_check and make sure you are happy!")
 }
 
-
