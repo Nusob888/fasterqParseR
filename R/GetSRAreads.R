@@ -48,10 +48,12 @@ correctNames <- function(input = assigned_SRA){
 #' @param working_dir Set working directory. Provide absolute paths
 #' @param input_dir Set to directory containing fasterq-dump or fastq-dump files
 #' @param outdir Directory to output the read legnths as SRRXXXXX_X.readlength.txt
+#' @param get_chemistry If *TRUE* will take first 10,000 reads and match to 10X whitelists stored within
+#' the package.  *default = FALSE*
 #' @return A dataframe containing SRR_ID, assigned_read, orig_names, new_names and cellranger_names
 #' A csv will be written into the outdir "assigned_SRAreads.csv".
 #' @export
-assignSRAreads <- function(working_dir=NULL, input_dir=NULL, outdir=NULL, get_versions=FALSE) {
+assignSRAreads <- function(working_dir=NULL, input_dir=NULL, outdir=NULL, get_chemistry=FALSE) {
 
   if(is.null(working_dir)){
     stop("please provide a working directory")
@@ -64,7 +66,7 @@ assignSRAreads <- function(working_dir=NULL, input_dir=NULL, outdir=NULL, get_ve
     ##set working directory
     setwd(working_dir)
 
-    if(isTRUE(get_versions)){
+    if(isTRUE(get_chemistry)){
     #Extract whitelists from package
     data(tenXv1, tenXv2, tenXv3)
     whitelists <- list(tenXv1, tenXv2, tenXv3)
@@ -83,7 +85,7 @@ assignSRAreads <- function(working_dir=NULL, input_dir=NULL, outdir=NULL, get_ve
       mean_length <- mean(scan(paste0(outdir,toParse[x,"orig_names"],".readslength.txt"), numeric(), quiet = TRUE))
      assigned_read<- assignRead(mean_length)
 
-    if(isTRUE(get_versions)){
+    if(isTRUE(get_chemistry)){
       if(assigned_read == "R1"){
         system(paste0("zcat ", x, " | head -40000 | awk '{if(NR%4==2) print /^@/ ? $1 : substr($0,1,16)}' > ", outdir,toParse[x,"fastq_names"],".seqs.txt"))
         seqs <- scan(paste0(outdir,toParse[x,"fastq_names"],".seqs.txt"),character(), quiet = TRUE)
