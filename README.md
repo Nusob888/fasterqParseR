@@ -55,7 +55,7 @@ Another issue with SRA deposits and indeed papers, is when 10X chemistries are i
 
 My personal advice for kallisto users, is to always recover chemistries this way and not rely on papers and SRA meta to be correct. 
 
-To obtain correct chemistries, use option *get_chemistry* within the *assignSRAreads()* function. This is defaulted to false
+To obtain correct chemistries, use option *get_chemistry* within the *assignSRAreads()* function. This is defaulted to *FALSE*
 
 ```
 ##If chemistries need to be cross checked, set get_chemistry to TRUE
