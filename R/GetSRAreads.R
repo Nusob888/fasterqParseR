@@ -43,6 +43,7 @@ correctNames <- function(input = assigned_SRA){
 #'**PLEASE NOTE** This will not take the output of fasterq/fastq-dump if you specified the --type argument
 #'
 #' 250 reads from all fastq files are then sampled from the listed fastqs and assigned to R1, R2 or I3.
+#' 10,000 reads will also be sampled if the reads are matched for R1
 #'
 #' @param working_dir Set working directory. Provide absolute paths
 #' @param input_dir Set to directory containing fasterq-dump or fastq-dump files
@@ -63,6 +64,11 @@ assignSRAreads <- function(working_dir=NULL, input_dir=NULL, outdir=NULL) {
     ##set working directory
     setwd(working_dir)
 
+    #Extract whitelists from package
+    data(tenXv1, tenXv2, tenXv3)
+    whitelists <- list(tenXv1, tenXv2, tenXv3)
+    names(whitelists) <- c("10xv1", "10xv2", "10xv3")
+
     ##Get fastqs and create dataframe of references
     fasterq_list <- list.files(input_dir, pattern="fastq.gz$|fastq$", recursive=TRUE,full.names = TRUE)
     orig_names <- gsub(".*SRR", "SRR", fasterq_list)
@@ -71,11 +77,25 @@ assignSRAreads <- function(working_dir=NULL, input_dir=NULL, outdir=NULL) {
 
     ##Sample first 250 reads and assign to either R1, R2 or I1 dependenton read lengths
     assigned_SRA<- lapply(toParse$fasterq_list, function(x){
-      system(paste0("zcat ", x, " | head -250 | awk '{if(NR%4==2) print length($1)}' > ", outdir,toParse[x,"orig_names"],".readslength.txt"))
+      system(paste0("zcat ", x, " | head -1000 | awk '{if(NR%4==2) print length($1)}' > ", outdir,toParse[x,"orig_names"],".readslength.txt"))
       mean_length <- mean(scan(paste0(outdir,toParse[x,"orig_names"],".readslength.txt"), numeric(), quiet = TRUE))
-      assigned_read<- assignRead(mean_length)
+     assigned_read<- assignRead(mean_length)
+
+      if(assigned_read == "R1"){
+        system(paste0("zcat ", x, " | head -40000 | awk '{if(NR%4==2) print /^@/ ? $1 : substr($0,1,16)}' > ", outdir,toParse[x,"fastq_names"],".seqs.txt"))
+        seqs <- scan(paste0(outdir,toParse[x,"fastq_names"],".seqs.txt"),character(), quiet = TRUE)
+
+        #Sum matched seqs to whitelists and take version of greatest matches
+        whitelist_counts <- cbind(lapply(whitelists, function(x){
+          sum(seqs %in% x)
+        }))
+        version <- names(whitelist_counts[which.max(whitelist_counts),])
+      }else{
+        version <- NA
+      }
+
       SRR_ID <- toParse[x,"orig_names"]
-      assigned <- data.frame(SRR_ID, assigned_read)
+      assigned <- data.frame(SRR_ID, assigned_read, version)
       return(assigned)
     })
 
