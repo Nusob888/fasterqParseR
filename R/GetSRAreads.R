@@ -51,7 +51,7 @@ correctNames <- function(input = assigned_SRA){
 #' @return A dataframe containing SRR_ID, assigned_read, orig_names, new_names and cellranger_names
 #' A csv will be written into the outdir "assigned_SRAreads.csv".
 #' @export
-assignSRAreads <- function(working_dir=NULL, input_dir=NULL, outdir=NULL) {
+assignSRAreads <- function(working_dir=NULL, input_dir=NULL, outdir=NULL, get_versions=FALSE) {
 
   if(is.null(working_dir)){
     stop("please provide a working directory")
@@ -63,11 +63,6 @@ assignSRAreads <- function(working_dir=NULL, input_dir=NULL, outdir=NULL) {
     print("First n=250 read lengths will be output into outdir")
     ##set working directory
     setwd(working_dir)
-
-    #Extract whitelists from package
-    data(tenXv1, tenXv2, tenXv3)
-    whitelists <- list(tenXv1, tenXv2, tenXv3)
-    names(whitelists) <- c("10xv1", "10xv2", "10xv3")
 
     ##Get fastqs and create dataframe of references
     fasterq_list <- list.files(input_dir, pattern="fastq.gz$|fastq$", recursive=TRUE,full.names = TRUE)
@@ -81,6 +76,7 @@ assignSRAreads <- function(working_dir=NULL, input_dir=NULL, outdir=NULL) {
       mean_length <- mean(scan(paste0(outdir,toParse[x,"orig_names"],".readslength.txt"), numeric(), quiet = TRUE))
      assigned_read<- assignRead(mean_length)
 
+    if(isTRUE(get_versions)){
       if(assigned_read == "R1"){
         system(paste0("zcat ", x, " | head -40000 | awk '{if(NR%4==2) print /^@/ ? $1 : substr($0,1,16)}' > ", outdir,toParse[x,"fastq_names"],".seqs.txt"))
         seqs <- scan(paste0(outdir,toParse[x,"fastq_names"],".seqs.txt"),character(), quiet = TRUE)
@@ -97,6 +93,11 @@ assignSRAreads <- function(working_dir=NULL, input_dir=NULL, outdir=NULL) {
       SRR_ID <- toParse[x,"orig_names"]
       assigned <- data.frame(SRR_ID, assigned_read, version)
       return(assigned)
+    }else{
+      SRR_ID <- toParse[x,"orig_names"]
+      assigned <- data.frame(SRR_ID, assigned_read)
+      return(assigned)
+    }
     })
 
     ##rbind output
