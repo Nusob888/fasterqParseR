@@ -11,7 +11,7 @@ Description: What the package does (one paragraph).
 License: `use_mit_license()`, `use_gpl3_license()` or friends to
     pick a license
 Encoding: UTF-8
-LazyData: true
+LazyData: no
 Imports:
 	data.table (>= 1.9.4)
 Roxygen: list(markdown = TRUE)
