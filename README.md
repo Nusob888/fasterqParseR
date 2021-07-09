@@ -56,6 +56,9 @@ Another issue with SRA deposits and indeed papers, is when 10X chemistries are i
 My personal advice for kallisto users, is to always recover chemistries this way and not rely on papers and SRA meta to be correct. 
 
 To obtain correct chemistries, use option *get_chemistry* within the *assignSRAreads()* function. This is defaulted to *FALSE*
+If *TRUE* the first 16bp of the top 10,000 reads from the corrected R1 assignments will be extracted and matched against 10X genomics [whitelists](https://kb.10xgenomics.com/hc/en-us/articles/115004506263-What-is-a-barcode-whitelist-). 
+
+
 
 ```
 ##If chemistries need to be cross checked, set get_chemistry to TRUE
