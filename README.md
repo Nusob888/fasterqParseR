@@ -64,7 +64,7 @@ If *TRUE* the first 16bp of the top 10,000 reads from the corrected R1 assignmen
 ##If chemistries need to be cross checked, set get_chemistry to TRUE
 assigned_files <- assignSRAreads(working_dir = working_directory, input_dir = input_dir, outdir =outdir, get_chemistry=TRUE)
 
-versions <- assigned_files[!is.na(test$chemistry),c("SRR_ID", "chemistry")]
+versions <- assigned_files[!is.na(assigned_files$chemistry),c("SRR_ID", "chemistry")]
 
 ```
 
