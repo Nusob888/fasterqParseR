@@ -4,7 +4,12 @@
 \alias{assignSRAreads}
 \title{Assign SRA reads for desposited 10X single cell RNAseq datasets}
 \usage{
-assignSRAreads(working_dir = NULL, input_dir = NULL, outdir = NULL)
+assignSRAreads(
+  working_dir = NULL,
+  input_dir = NULL,
+  outdir = NULL,
+  get_chemistry = FALSE
+)
 }
 \arguments{
 \item{working_dir}{Set working directory. Provide absolute paths}
@@ -12,6 +17,9 @@ assignSRAreads(working_dir = NULL, input_dir = NULL, outdir = NULL)
 \item{input_dir}{Set to directory containing fasterq-dump or fastq-dump files}
 
 \item{outdir}{Directory to output the read legnths as SRRXXXXX_X.readlength.txt}
+
+\item{get_chemistry}{If \emph{TRUE} will take first 10,000 reads and match to 10X whitelists stored within
+the package.  \emph{default = FALSE}}
 }
 \value{
 A dataframe containing SRR_ID, assigned_read, orig_names, new_names and cellranger_names
@@ -28,4 +36,5 @@ fastq-dump --split-files
 }
 \details{
 250 reads from all fastq files are then sampled from the listed fastqs and assigned to R1, R2 or I3.
+10,000 reads will also be sampled if the reads are matched for R1
 }

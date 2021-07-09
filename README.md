@@ -50,6 +50,22 @@ assigned_files <- assignSRAreads(working_dir = working_directory, input_dir = in
 renameAll(assigned_SRA= assigned_files, input_dir=input_dir, format="cellranger")
 ```
 
-I hope you all enjoy using this. When I have time, I will write functionality for autodetecting 10X chemistries as I have noticed these are often inaccurately assigned in SRA and papers. Whilst this is fine for cellranger which auto-detects against whitelists, for those using kallisto bustools, it can be very frustrating. 
+## Get correct chemistry versions
+Another issue with SRA deposits and indeed papers, is when 10X chemistries are incorrectly stated, or when chemistries are mixed without metadata to index. This is not an issue for cellranger, however does become an issue for other tools requiring the user to state an input chemistry. 
+
+My personal advice for kallisto users, is to always recover chemistries this way and not rely on papers and SRA meta to be correct. 
+
+To obtain correct chemistries, use option *get_chemistry* within the *assignSRAreads()* function. This is defaulted to *FALSE*
+If *TRUE* the first 16bp of the top 10,000 reads from the corrected R1 assignments will be extracted and matched against 10X genomics [whitelists](https://kb.10xgenomics.com/hc/en-us/articles/115004506263-What-is-a-barcode-whitelist-). 
+
+
+
+```
+##If chemistries need to be cross checked, set get_chemistry to TRUE
+assigned_files <- assignSRAreads(working_dir = working_directory, input_dir = input_dir, outdir =outdir, get_chemistry=TRUE)
+
+```
+
+I hope you all enjoy using this small package. 
 
 **Happy public dataset hunting!**
