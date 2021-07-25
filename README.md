@@ -36,6 +36,8 @@ If outdir is left empty, the function *assignSRAreads()* will make a "read_lengt
 
 The functions *assignSRAreads()* and *renameAll()* will always output a csv file named "assigned_SRAreads.csv" into outdir. This will contain the updated dataframes which will index original SRA run IDs, fastq output names and the proposed new names. This way one may change the names back easily in place. 
 
+**Important** Always check the new assignments. In some cases, SRA deposits contain duplicated fastqs representing the same reads despite being labelled as _1 or _2. Sadly, this is something that needs to be taken up with SRA and the authors to correct. 
+
 ```
 ##Assign directories
 working_dir = "~/Project_X/"
