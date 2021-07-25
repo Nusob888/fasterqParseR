@@ -5,7 +5,7 @@
 assignRead <- function(mean_length=mean_length){
   if(mean_length %in% seq(20, 30)){
     assign <- "R1"
-  }else if(mean_length %in% seq(80, 100)){
+  }else if(mean_length %in% seq(80, 200)){
     assign <- "R2"
   }else if(mean_length %in% seq(5,10)){
     assign <- "I3"
