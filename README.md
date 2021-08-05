@@ -36,7 +36,10 @@ If outdir is left empty, the function *assignSRAreads()* will make a "read_lengt
 
 The functions *assignSRAreads()* and *renameAll()* will always output a csv file named "assigned_SRAreads.csv" into outdir. This will contain the updated dataframes which will index original SRA run IDs, fastq output names and the proposed new names. This way one may change the names back easily in place. 
 
-**Important** Always check the new assignments. In some cases, SRA deposits contain duplicated fastqs representing the same reads despite being labelled as _1 or _2. Sadly, this is something that needs to be taken up with SRA and the authors to correct. 
+**Important considerations** 
+1) Do not correct file names for 10X VDJ tools!!! VDJ sequencing typically uses 150bp paired end reads and therefore, R1 and R2 will all be assigned to R2. The tool can help you quickly identify which file is the indexing file, but renaming of VDJ R1 and R2 is not possible. I will attempt to update the tool to arbitarily assign R1 or R2 to the VDJ reads, but I will need to benchmark this first on cellranger to ensure it won't affect the alignments. 
+
+2) Always check the new assignments. In some cases, SRA deposits contain duplicated fastqs representing the same reads despite being labelled as _1 or _2. Sadly, this is something that needs to be taken up with SRA and the authors to correct. 
 
 ```
 ##Assign directories
