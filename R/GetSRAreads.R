@@ -141,9 +141,18 @@ renameAll <- function(assigned_SRA = NULL, input_dir=NULL, format = NULL){
   } else if(any(!grepl("read_correct|cellranger", format))){
     stop("Please decide on a renaming format from 'read_correct' or 'cellranger'")
   }else if(format == "read_correct"){
-    for (i in 1:nrow(assigned_SRA)){
-      system(paste0( "mv ", assigned_SRA$orig_name[i], " ", assigned_SRA$new_name[i]))
-    }
+      ##create dummy name to avoid overwriting duplicate names
+      assigned_SRA$parent_dir <- gsub("/[^/]*$", "", assigned_SRA$orig_names)
+      assigned_SRA$dummy_name <- paste0(assigned_SRA$parent_dir, "/","dummy",assigned_SRA$new_name)
+      
+      ##assign to dummy name
+      for (i in 1:nrow(assigned_SRA)){
+        system(paste0( "mv ", assigned_SRA$orig_name[i], " ", assigned_SRA$dummy_name[i]))
+      }
+      ##assign to new name
+      for (i in 1:nrow(assigned_SRA)){
+        system(paste0( "mv ", assigned_SRA$dummy_name[i], " ", assigned_SRA$new_name[i]))
+      }    
   }else if(format == "cellranger"){
     for (i in 1:nrow(assigned_SRA)){
       system(paste0( "mv ", assigned_SRA$orig_name[i], " ", assigned_SRA$cellranger_names[i]))
