@@ -50,7 +50,7 @@ outdir="~/Project_X/read_lengths/"
 ##Assign SRA reads. This will output a datatable containing columns: "SRR_ID", "assigned_read", "new_names", "cellranger_names"
 assigned_files <- assignSRAreads(working_dir = working_directory, input_dir = input_dir, outdir =outdir)
 
-##Correct names. Here format can be assigned as "read_correc" or "cellranger". read_correct simple corrects the _1/_2/_3 suffixes to the correct assignments. cellranger, will rename all files to cellranger compatible formats SRRXXXX_S1_L001_RX_001.fastq
+##Correct names. Here format can be assigned as "read_correct" or "cellranger". read_correct simple corrects the _1/_2/_3 suffixes to the correct assignments. cellranger, will rename all files to cellranger compatible formats SRRXXXX_S1_L001_RX_001.fastq
 
 renameAll(assigned_SRA= assigned_files, input_dir=input_dir, format="cellranger")
 ```
