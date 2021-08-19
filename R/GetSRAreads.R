@@ -162,7 +162,7 @@ renameAll <- function(assigned_SRA = NULL, input_dir=NULL, format = NULL){
   }else if(format == "read_correct"){
       ##create dummy name to avoid overwriting duplicate names
       assigned_SRA$parent_dir <- gsub("/[^/]*$", "", assigned_SRA$orig_names)
-      assigned_SRA$dummy_name <- paste0(assigned_SRA$parent_dir, "/","dummy",assigned_SRA$new_name)
+      assigned_SRA$dummy_name <- paste0(assigned_SRA$parent_dir, "/","dummy", gsub(".*SRR","SRR",assigned_SRA$new_name))
 
       ##assign to dummy name
       for (i in 1:nrow(assigned_SRA)){
