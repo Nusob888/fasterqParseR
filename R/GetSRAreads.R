@@ -1,6 +1,6 @@
 #'@importFrom data.table rbindlist
-#'@importFrom parellel mclapply
-#'@importFrom parellel detectCores
+#'@importFrom parallel mclapply
+#'@importFrom parallel detectCores
 
 
 ##correct names
