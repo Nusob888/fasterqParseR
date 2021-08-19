@@ -1,17 +1,7 @@
 #'@importFrom data.table rbindlist
+#'@importFrom parallel mclapply
+#'@importFrom parallel detectCores
 
-
-##assign reads to likely R1, R2, I3
-assignRead <- function(mean_length=mean_length){
-  if(mean_length %in% seq(20, 30)){
-    assign <- "R1"
-  }else if(mean_length %in% seq(80, 200)){
-    assign <- "R2"
-  }else if(mean_length %in% seq(5,10)){
-    assign <- "I3"
-  }
-  return(assign)
-}
 
 ##correct names
 correctNames <- function(input = assigned_SRA){
@@ -48,12 +38,11 @@ correctNames <- function(input = assigned_SRA){
 #' @param working_dir Set working directory. Provide absolute paths
 #' @param input_dir Set to directory containing fasterq-dump or fastq-dump files
 #' @param outdir Directory to output the read legnths as SRRXXXXX_X.readlength.txt
-#' @param get_chemistry If *TRUE* will take first 10,000 reads and match to 10X whitelists stored within
-#' the package.  *default = FALSE*
+#' @param parallel if *TRUE*, uses mclapply from parallel package. *default=FALSE*
 #' @return A dataframe containing SRR_ID, assigned_read, orig_names, new_names and cellranger_names
 #' A csv will be written into the outdir "assigned_SRAreads.csv".
 #' @export
-assignSRAreads <- function(working_dir=NULL, input_dir=NULL, outdir=NULL, get_chemistry=FALSE) {
+assignSRAreads <- function(working_dir=NULL, input_dir=NULL, outdir=NULL, parallel = FALSE) {
 
   if(is.null(working_dir)){
     stop("please provide a working directory")
@@ -66,12 +55,14 @@ assignSRAreads <- function(working_dir=NULL, input_dir=NULL, outdir=NULL, get_ch
     ##set working directory
     setwd(working_dir)
 
-    if(isTRUE(get_chemistry)){
+    #detect cores
+    numCores <- detectCores()-1
+
     #Extract whitelists from package
     data(tenXv1, tenXv2, tenXv3)
     whitelists <- list(tenXv1, tenXv2, tenXv3)
     names(whitelists) <- c("10xv1", "10xv2", "10xv3")
-    }
+
 
     ##Get fastqs and create dataframe of references
     fasterq_list <- list.files(input_dir, pattern="fastq.gz$|fastq$", recursive=TRUE,full.names = TRUE)
@@ -79,49 +70,77 @@ assignSRAreads <- function(working_dir=NULL, input_dir=NULL, outdir=NULL, get_ch
     orig_names <- gsub(".fastq.*", "", orig_names)
     toParse <- data.frame(fasterq_list=as.character(fasterq_list), orig_names=as.character(orig_names))
 
-    ##Sample first 250 reads and assign to either R1, R2 or I1 dependenton read lengths
-    assigned_SRA<- lapply(toParse$fasterq_list, function(x){
+    ##Sample first 250 reads and assign to either R1, R2 or I1 dependent on read lengths
+    if (parallel==TRUE){
+    assigned_SRA<- mclapply(toParse$fasterq_list, function(x){
       system(paste0("zcat ", x, " | head -1000 | awk '{if(NR%4==2) print length($1)}' > ", outdir,toParse[x,"orig_names"],".readslength.txt"))
       mean_length <- mean(scan(paste0(outdir,toParse[x,"orig_names"],".readslength.txt"), numeric(), quiet = TRUE))
-     assigned_read<- assignRead(mean_length)
 
-    if(isTRUE(get_chemistry)){
-      if(assigned_read == "R1"){
+      if(mean_length %in% seq(5,10)){
+        assigned_read <- "I3"
+        chemistry <- NA
+      }else if(mean_length > 10){
         system(paste0("zcat ", x, " | head -40000 | awk '{if(NR%4==2) print /^@/ ? $1 : substr($0,1,16)}' > ", outdir,toParse[x,"orig_names"],".seqs.txt"))
         seqs <- scan(paste0(outdir,toParse[x,"orig_names"],".seqs.txt"),character(), quiet = TRUE)
 
-        #Sum matched seqs to whitelists and take chemistry of greatest matches
         whitelist_counts <- cbind(lapply(whitelists, function(x){
           sum(seqs %in% x)
         }))
-        chemistry <- names(whitelist_counts[which.max(whitelist_counts),])
-      }else{
-        chemistry <- NA
+
+        if(sum(unlist(whitelist_counts)) > 1000){
+          assigned_read <- "R1"
+          chemistry <- names(whitelist_counts[which.max(whitelist_counts),])
+        }else{
+          assigned_read <- "R2"
+          chemistry <- NA
+        }
       }
 
       SRR_ID <- toParse[x,"orig_names"]
-      assigned <- data.frame(SRR_ID, assigned_read, chemistry)
+      assigned <- data.frame(SRR_ID, mean_length,assigned_read, chemistry)
       return(assigned)
-
+    }, mc.cores=numCores)
     }else{
+      assigned_SRA<- lapply(toParse$fasterq_list, function(x){
+        system(paste0("zcat ", x, " | head -1000 | awk '{if(NR%4==2) print length($1)}' > ", outdir,toParse[x,"orig_names"],".readslength.txt"))
+        mean_length <- mean(scan(paste0(outdir,toParse[x,"orig_names"],".readslength.txt"), numeric(), quiet = TRUE))
 
-      SRR_ID <- toParse[x,"orig_names"]
-      assigned <- data.frame(SRR_ID, assigned_read)
-      return(assigned)
+        if(mean_length %in% seq(5,10)){
+          assigned_read <- "I3"
+          chemistry <- NA
+        }else if(mean_length > 10){
+          system(paste0("zcat ", x, " | head -40000 | awk '{if(NR%4==2) print /^@/ ? $1 : substr($0,1,16)}' > ", outdir,toParse[x,"orig_names"],".seqs.txt"))
+          seqs <- scan(paste0(outdir,toParse[x,"orig_names"],".seqs.txt"),character(), quiet = TRUE)
 
+          whitelist_counts <- cbind(lapply(whitelists, function(x){
+            sum(seqs %in% x)
+          }))
+
+          if(sum(unlist(whitelist_counts)) > 1000){
+            assigned_read <- "R1"
+            chemistry <- names(whitelist_counts[which.max(whitelist_counts),])
+          }else{
+            assigned_read <- "R2"
+            chemistry <- NA
+          }
+        }
+
+        SRR_ID <- toParse[x,"orig_names"]
+        assigned <- data.frame(SRR_ID, mean_length,assigned_read, chemistry)
+        return(assigned)
+      })
     }
-    })
 
     ##rbind output
     bound <- data.table::rbindlist(assigned_SRA)
     bound$orig_names <- fasterq_list
-    assigned_SRA <- correctNames(bound)
-
+    bound <- correctNames(bound)
     ##write output to outdir
     write.csv(assigned_SRA, paste0(outdir, "assigned_SRAreads.csv"))
   }
-  return(assigned_SRA)
+  return(bound)
 }
+
 
 
 #' Rename all fastas to the correct filenames
@@ -144,7 +163,7 @@ renameAll <- function(assigned_SRA = NULL, input_dir=NULL, format = NULL){
       ##create dummy name to avoid overwriting duplicate names
       assigned_SRA$parent_dir <- gsub("/[^/]*$", "", assigned_SRA$orig_names)
       assigned_SRA$dummy_name <- paste0(assigned_SRA$parent_dir, "/","dummy",assigned_SRA$new_name)
-      
+
       ##assign to dummy name
       for (i in 1:nrow(assigned_SRA)){
         system(paste0( "mv ", assigned_SRA$orig_name[i], " ", assigned_SRA$dummy_name[i]))
@@ -152,7 +171,7 @@ renameAll <- function(assigned_SRA = NULL, input_dir=NULL, format = NULL){
       ##assign to new name
       for (i in 1:nrow(assigned_SRA)){
         system(paste0( "mv ", assigned_SRA$dummy_name[i], " ", assigned_SRA$new_name[i]))
-      }    
+      }
   }else if(format == "cellranger"){
     for (i in 1:nrow(assigned_SRA)){
       system(paste0( "mv ", assigned_SRA$orig_name[i], " ", assigned_SRA$cellranger_names[i]))
