@@ -8,7 +8,7 @@ assignSRAreads(
   working_dir = NULL,
   input_dir = NULL,
   outdir = NULL,
-  get_chemistry = FALSE
+  parallel = FALSE
 )
 }
 \arguments{
@@ -16,10 +16,7 @@ assignSRAreads(
 
 \item{input_dir}{Set to directory containing fasterq-dump or fastq-dump files}
 
-\item{outdir}{Directory to output the read legnths as SRRXXXXX_X.readlength.txt}
-
-\item{get_chemistry}{If \emph{TRUE} will take first 10,000 reads and match to 10X whitelists stored within
-the package.  \emph{default = FALSE}}
+\item{outdir}{if \emph{TRUE}, uses mclapply from parallel package. \emph{default=FALSE}}
 }
 \value{
 A dataframe containing SRR_ID, assigned_read, orig_names, new_names and cellranger_names
