@@ -87,8 +87,8 @@ assignSRAreads <- function(working_dir=NULL, input_dir=NULL, outdir=NULL, get_ch
 
     if(isTRUE(get_chemistry)){
       if(assigned_read == "R1"){
-        system(paste0("zcat ", x, " | head -40000 | awk '{if(NR%4==2) print /^@/ ? $1 : substr($0,1,16)}' > ", outdir,toParse[x,"fastq_names"],".seqs.txt"))
-        seqs <- scan(paste0(outdir,toParse[x,"fastq_names"],".seqs.txt"),character(), quiet = TRUE)
+        system(paste0("zcat ", x, " | head -40000 | awk '{if(NR%4==2) print /^@/ ? $1 : substr($0,1,16)}' > ", outdir,toParse[x,"orig_names"],".seqs.txt"))
+        seqs <- scan(paste0(outdir,toParse[x,"orig_names"],".seqs.txt"),character(), quiet = TRUE)
 
         #Sum matched seqs to whitelists and take chemistry of greatest matches
         whitelist_counts <- cbind(lapply(whitelists, function(x){
