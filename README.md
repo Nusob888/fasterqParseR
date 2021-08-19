@@ -1,3 +1,15 @@
+# Update
+
+*Version 2*
+Changes:
+- Now R1 and R2 are no longer assigned purely based on read length
+- R1 is assigned based on whitelist matching
+- 10X chemistries are now automatically returned
+- Mean read lengths are also returned within the output dataframe to allow quick assessment of correct assignments before name correction
+- Cellranger compatible names automatically returned in the output dataframe
+- Parallelisation supported via. parallel package
+- Now compatible with 10X VDJ immune profiling, no need to process separately. 
+
 # fasterqParseR
 
 **Declaration**: *This tool was designed for the sole purpose of parsing fasterq/fastq-dump outputs for single cell RNAseq experiments, in particular, 10X genomics datasets.*
