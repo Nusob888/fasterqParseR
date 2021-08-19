@@ -3,5 +3,5 @@
 export(assignSRAreads)
 export(renameAll)
 importFrom(data.table,rbindlist)
-importFrom(parellel,detectCores)
-importFrom(parellel,mclapply)
+importFrom(parallel,detectCores)
+importFrom(parallel,mclapply)
