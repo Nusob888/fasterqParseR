@@ -8,20 +8,13 @@ fasterq-dump --include-technical --split-files</br>
 or</br>
 fastq-dump --split-files</br>
 
-The tool will then take an input directory and iteratively sample the top 250 reads and assign them to R1, R2 or I1 using the following paramaters and generate correct names based on these assignments or cellranger compatible names based on these assignments. 
+The tool will then take an input directory and iteratively sample the top 250 reads and assign them to R1, R2 or I1 using the following paramaters and generate correct names based on the following parameters:
 
-```
-assignRead <- function(mean_length=mean_length){
-  if(mean_length %in% seq(20, 30)){
-    assign <- "R1"
-  }else if(mean_length %in% seq(80, 100)){
-    assign <- "R2"
-  }else if(mean_length %in% seq(5,10)){
-    assign <- "I3"
-  }
-  return(assign)
-}
-```
+- If the mean lengths of the sampled reads are <=10bp, they will be assigned as "I"
+- If the reads are over 10bp, they will be automatically matched against 10X whitelists for v1, v2 and v3 chemistries. If >1000 barcodes are detected, they will be assigned to "R1" 
+- When matching against whitelists, 10X chemistries are also returned as the chemistry with the highest number of matches to the respective whitelist. 
+- Lastly, if <1000 barcodes are detected it will be assigned to "R2"
+
 The motivation for writing this was born out of repeated misordering of fasterq/fastq-dump outputs based on the order of upload of the depositing researchers. I hope it makes some of your lives that little bit easier! All feedback is welcome and if there are any unstable or unwanted behaviours, please do report these in the issues section. 
 
 # Instructions for use
@@ -37,9 +30,11 @@ If outdir is left empty, the function *assignSRAreads()* will make a "read_lengt
 The functions *assignSRAreads()* and *renameAll()* will always output a csv file named "assigned_SRAreads.csv" into outdir. This will contain the updated dataframes which will index original SRA run IDs, fastq output names and the proposed new names. This way one may change the names back easily in place. 
 
 **Important considerations** 
-1) Do not correct file names for 10X VDJ outputs!!! VDJ sequencing typically uses 150bp paired end reads and therefore, R1 and R2 will all be assigned to R2. The tool can help you quickly identify which file is the indexing file, but renaming of VDJ R1 and R2 is not possible. I will attempt to update the tool to arbitarily assign R1 or R2 to the VDJ reads, but I will need to benchmark this first on cellranger to ensure it won't affect the alignments. 
+1) Always check the new assignments. In some cases, SRA deposits contain duplicated fastqs representing the same reads despite being labelled as _1 or _2. Sadly, this is something that needs to be taken up with SRA and the authors. 
 
-2) Always check the new assignments. In some cases, SRA deposits contain duplicated fastqs representing the same reads despite being labelled as _1 or _2. Sadly, this is something that needs to be taken up with SRA and the authors to correct. 
+2) fasterqParseR currently does not support scATAC. Unfortunately there is no way of identifying R1 and R3 as both are 50bp. 
+
+3) parallelisation is supported via the parallel package. This is currently turned off as default to avoid accidently hogging resources on clusters. It can be activated by: @param parallel = TRUE
 
 ```
 ##Assign directories
@@ -48,29 +43,11 @@ input_dir = "~/Project_X/fasterq_output/"
 outdir="~/Project_X/read_lengths/"
 
 ##Assign SRA reads. This will output a datatable containing columns: "SRR_ID", "assigned_read", "new_names", "cellranger_names"
-assigned_files <- assignSRAreads(working_dir = working_directory, input_dir = input_dir, outdir =outdir)
+assigned_files <- assignSRAreads(working_dir = working_directory, input_dir = input_dir, outdir =outdir, parallel=TRUE)
 
 ##Correct names. Here format can be assigned as "read_correct" or "cellranger". read_correct simple corrects the _1/_2/_3 suffixes to the correct assignments. cellranger, will rename all files to cellranger compatible formats SRRXXXX_S1_L001_RX_001.fastq
 
 renameAll(assigned_SRA= assigned_files, input_dir=input_dir, format="cellranger")
-```
-
-## Get correct chemistry versions
-Another issue with SRA deposits and indeed papers, is when 10X chemistries are incorrectly stated, or when chemistries are mixed without metadata to index. This is not an issue for cellranger, however does become an issue for other tools requiring the user to state an input chemistry. 
-
-My personal advice for kallisto users, is to always recover chemistries this way and not rely on papers and SRA meta to be correct. 
-
-To obtain correct chemistries, use option *get_chemistry* within the *assignSRAreads()* function. This is defaulted to *FALSE*. </br>
-If *TRUE* the first 16bp of the top 10,000 reads from the corrected R1 assignments will be extracted and matched against 10X genomics [whitelists](https://kb.10xgenomics.com/hc/en-us/articles/115004506263-What-is-a-barcode-whitelist-). 
-
-
-
-```
-##If chemistries need to be cross checked, set get_chemistry to TRUE
-assigned_files <- assignSRAreads(working_dir = working_directory, input_dir = input_dir, outdir =outdir, get_chemistry=TRUE)
-
-versions <- assigned_files[!is.na(assigned_files$chemistry),c("SRR_ID", "chemistry")]
-
 ```
 
 I hope you all enjoy using this small package. 

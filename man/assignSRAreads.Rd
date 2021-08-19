@@ -16,7 +16,9 @@ assignSRAreads(
 
 \item{input_dir}{Set to directory containing fasterq-dump or fastq-dump files}
 
-\item{outdir}{if \emph{TRUE}, uses mclapply from parallel package. \emph{default=FALSE}}
+\item{outdir}{Directory to output the read legnths as SRRXXXXX_X.readlength.txt}
+
+\item{parallel}{if \emph{TRUE}, uses mclapply from parallel package. \emph{default=FALSE}}
 }
 \value{
 A dataframe containing SRR_ID, assigned_read, orig_names, new_names and cellranger_names

@@ -38,7 +38,7 @@ correctNames <- function(input = assigned_SRA){
 #' @param working_dir Set working directory. Provide absolute paths
 #' @param input_dir Set to directory containing fasterq-dump or fastq-dump files
 #' @param outdir Directory to output the read legnths as SRRXXXXX_X.readlength.txt
-#' @param outdir if *TRUE*, uses mclapply from parallel package. *default=FALSE*
+#' @param parallel if *TRUE*, uses mclapply from parallel package. *default=FALSE*
 #' @return A dataframe containing SRR_ID, assigned_read, orig_names, new_names and cellranger_names
 #' A csv will be written into the outdir "assigned_SRAreads.csv".
 #' @export
