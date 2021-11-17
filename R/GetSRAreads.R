@@ -69,18 +69,19 @@ assignSRAreads <- function(working_dir=NULL, input_dir=NULL, outdir=NULL, parall
     orig_names <- gsub(".*SRR", "SRR", fasterq_list)
     orig_names <- gsub(".fastq.*", "", orig_names)
     toParse <- data.frame(fasterq_list=as.character(fasterq_list), orig_names=as.character(orig_names))
+    toParse$cat <- ifelse(grepl(".gz", toParse$fasterq_list), "zcat", "cat")
 
     ##Sample first 250 reads and assign to either R1, R2 or I1 dependent on read lengths
     if (parallel==TRUE){
     assigned_SRA<- mclapply(toParse$fasterq_list, function(x){
-      system(paste0("zcat ", x, " | head -1000 | awk '{if(NR%4==2) print length($1)}' > ", outdir,toParse[x,"orig_names"],".readslength.txt"))
+      system(paste0(toParse[x,"cat"], " ", x, " | head -1000 | awk '{if(NR%4==2) print length($1)}' > ", outdir,toParse[x,"orig_names"],".readslength.txt"))
       mean_length <- mean(scan(paste0(outdir,toParse[x,"orig_names"],".readslength.txt"), numeric(), quiet = TRUE))
 
       if(mean_length %in% seq(5,10)){
         assigned_read <- "I3"
         chemistry <- NA
       }else if(mean_length > 10){
-        system(paste0("zcat ", x, " | head -40000 | awk '{if(NR%4==2) print /^@/ ? $1 : substr($0,1,16)}' > ", outdir,toParse[x,"orig_names"],".seqs.txt"))
+        system(paste0(toParse[x,"cat"], " ", x, " | head -40000 | awk '{if(NR%4==2) print /^@/ ? $1 : substr($0,1,16)}' > ", outdir,toParse[x,"orig_names"],".seqs.txt"))
         seqs <- scan(paste0(outdir,toParse[x,"orig_names"],".seqs.txt"),character(), quiet = TRUE)
 
         whitelist_counts <- cbind(lapply(whitelists, function(x){
@@ -102,14 +103,14 @@ assignSRAreads <- function(working_dir=NULL, input_dir=NULL, outdir=NULL, parall
     }, mc.cores=numCores)
     }else{
       assigned_SRA<- lapply(toParse$fasterq_list, function(x){
-        system(paste0("zcat ", x, " | head -1000 | awk '{if(NR%4==2) print length($1)}' > ", outdir,toParse[x,"orig_names"],".readslength.txt"))
+        system(paste0(toParse[x,"cat"], " ", x, " | head -1000 | awk '{if(NR%4==2) print length($1)}' > ", outdir,toParse[x,"orig_names"],".readslength.txt"))
         mean_length <- mean(scan(paste0(outdir,toParse[x,"orig_names"],".readslength.txt"), numeric(), quiet = TRUE))
 
         if(mean_length %in% seq(5,10)){
           assigned_read <- "I3"
           chemistry <- NA
         }else if(mean_length > 10){
-          system(paste0("zcat ", x, " | head -40000 | awk '{if(NR%4==2) print /^@/ ? $1 : substr($0,1,16)}' > ", outdir,toParse[x,"orig_names"],".seqs.txt"))
+          system(paste0(toParse[x,"cat"], " ", x, " | head -40000 | awk '{if(NR%4==2) print /^@/ ? $1 : substr($0,1,16)}' > ", outdir,toParse[x,"orig_names"],".seqs.txt"))
           seqs <- scan(paste0(outdir,toParse[x,"orig_names"],".seqs.txt"),character(), quiet = TRUE)
 
           whitelist_counts <- cbind(lapply(whitelists, function(x){
