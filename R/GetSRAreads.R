@@ -49,7 +49,7 @@ assignSRAreads <- function(working_dir=NULL, input_dir=NULL, outdir=NULL, parall
   if(is.null(outdir)){
     system(paste0("rm -r ",working_dir,"/", "read_lengths"))
     system(paste0("mkdir ",working_dir,"/", "read_lengths"))
-    outdir <- paste0(working_dir,"/", "read_lengths")
+    outdir <- paste0(working_dir,"/", "read_lengths/")
   }
 
   if(is.null(working_dir)){
