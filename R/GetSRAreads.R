@@ -46,13 +46,16 @@ assignSRAreads <- function(working_dir=NULL, input_dir=NULL, outdir=NULL, parall
   ##set working directory
   setwd(working_dir)
 
+  if(is.null(outdir)){
+    system(paste0("rm -r ",working_dir,"/", "read_lengths"))
+    system(paste0("mkdir ",working_dir,"/", "read_lengths"))
+    outdir <- paste0(working_dir,"/", "read_lengths")
+  }
+
   if(is.null(working_dir)){
     stop("please provide a working directory")
   }else if(is.null(input_dir)){
     stop("please provide input directory containing all fasterq-dump outputs")
-  }else if(is.null(outdir)){
-    system(paste0("mkdir ",working_dir,"/", "read_lengths"))
-    outdir <- paste0(working_dir,"/", "read_lengths")
   }else{
     print("First n=250 read lengths will be output into outdir")
 
