@@ -43,17 +43,18 @@ correctNames <- function(input = assigned_SRA){
 #' A csv will be written into the outdir "assigned_SRAreads.csv".
 #' @export
 assignSRAreads <- function(working_dir=NULL, input_dir=NULL, outdir=NULL, parallel = FALSE) {
+  ##set working directory
+  setwd(working_dir)
 
   if(is.null(working_dir)){
     stop("please provide a working directory")
   }else if(is.null(input_dir)){
     stop("please provide input directory containing all fasterq-dump outputs")
   }else if(is.null(outdir)){
-    system(paste0("mkdir ", "read_lengths"))
+    system(paste0("mkdir ",working_dir,"/", "read_lengths"))
+    outdir <- paste0(working_dir,"/", "read_lengths")
   }else{
     print("First n=250 read lengths will be output into outdir")
-    ##set working directory
-    setwd(working_dir)
 
     #detect cores
     numCores <- detectCores()-1
